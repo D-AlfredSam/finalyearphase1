@@ -1,0 +1,11 @@
+first:
+
+python quantum_backend.py
+
+then:
+
+python -m http.server 5500
+
+finally:
+run index.html
+

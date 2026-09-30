@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Q-Ledger | Quantum Blockchain & Shared Ledger Simulator</title>
+    <meta name="description"
+        content="A distributed blockchain network simulator featuring 1 user node, 6 consensus validators, a shared ledger, and instant approval validation pipeline.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                    <polyline points="2 17 12 22 22 17" />
+                    <polyline points="2 12 12 17 22 12" />
+                </svg>
+            </div>
+            <div>
+                <span class="brand-title">Q-Ledger Consensus</span>
+                <span class="brand-tag">Final Year Project</span>
+            </div>
+        </div>
+
+        <div class="nav-metrics">
+            <div class="metric-badge">
+                <span class="pulse-dot"></span>
+                <span>Validators: <strong>6 / 6 Active</strong></span>
+            </div>
+            <div class="metric-badge">
+                <span style="color:#00f0ff;">⚡</span>
+                <span id="blockCountBadge">1 Block</span>
+            </div>
+            <div class="metric-badge">
+                <span style="color:#f59e0b;">⏳</span>
+                <span id="mempoolCountBadge">0 Pending</span>
+            </div>
+        </div>
+
+        <div class="nav-actions">
+            <button class="btn btn-secondary" id="autoTrafficBtn" title="Periodically simulate user transactions">
+                ⚡ Auto-Traffic: OFF
+            </button>
+            <button class="btn btn-secondary" id="verifyLedgerBtn" title="Audit cryptographic SHA-256 chain links">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                Audit Shared Ledger
+            </button>
+            <button class="btn btn-primary" id="inspectCodeBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                </svg>
+                View Validation Logic
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="app-container">
+        <!-- Hero Architecture Info Banner -->
+        <section class="hero-banner">
+            <div class="hero-info">
+                <h1>
+                    <span>Quantum Shared Ledger & Validator Consensus Network</span>
+                </h1>
+                <p>
+                    Demonstrating a complete blockchain transaction lifecycle: <strong>1 User</strong> initiates a
+                    transfer, broadcasts it to <strong>6 distributed Validators</strong>. Each validator executes the
+                    requested validation rule (which returns <code>"approved"</code>), builds consensus, mints a
+                    cryptographic SHA-256 block linked by previous hash pointers, and commits the state synchronously
+                    across the <strong>Shared Ledger</strong>.
+                </p>
+                <div class="hero-chips">
+                    <span class="chip chip-cyan">👤 1 User Client</span>
+                    <span class="chip chip-violet">🛡️ 6 Consensus Validators</span>
+                    <span class="chip chip-emerald">✓ Validation Fn: Returns "approved"</span>
+                    <span class="chip">🔗 SHA-256 Linked Blocks</span>
+                    <span class="chip">🌐 Replicated Shared Ledger</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3-Column Dashboard Grid -->
+        <div class="dashboard-grid">
+
+            <!-- Column 1: User Node & Transaction Composition -->
+            <aside class="glass-panel user-column">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span class="panel-title-icon">👤</span>
+                        <span>User Node (Alice)</span>
+                    </div>
+                    <span class="chip chip-cyan" style="font-size:10px;">Initiator</span>
+                </div>
+
+                <div class="panel-body">
+                    <!-- Balance Card -->
+                    <div class="user-balance-card">
+                        <div class="balance-label">
+                            <span>Available Balance</span>
+                            <span style="color:#00f0ff;">Quantum Tokens</span>
+                        </div>
+                        <div class="balance-amount">
+                            <span id="userBalance">1000.00</span>
+                            <span class="balance-currency">QTC</span>
+                        </div>
+                        <div class="user-address-badge">
+                            <span>Address:</span>
+                            <span id="userAddress">0x71A9...2F9c1</span>
+                        </div>
+                    </div>
+
+                    <!-- Transaction Form -->
+                    <form id="txForm">
+                        <div class="form-group">
+                            <label class="form-label" for="recipientSelect">Recipient Account</label>
+                            <select class="form-select" id="recipientSelect">
+                                <!-- Populated dynamically by app.js -->
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="txAmount">Transfer Amount (QTC)</label>
+                            <input class="form-input" type="number" id="txAmount" value="50" min="0.1" step="0.1"
+                                required>
+                            <div class="preset-buttons">
+                                <button type="button" class="preset-btn" data-amount="10">+10</button>
+                                <button type="button" class="preset-btn" data-amount="50">+50</button>
+                                <button type="button" class="preset-btn" data-amount="100">+100</button>
+                                <button type="button" class="preset-btn" data-amount="250">+250</button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="txMemo">Transaction Memo / State</label>
+                            <input class="form-input" type="text" id="txMemo"
+                                value="Final Year Blockchain Validation Test" placeholder="Optional payload...">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="sendTxBtn"
+                            style="width:100%;justify-content:center;margin-top:8px;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                            Submit & Validate Transaction
+                        </button>
+                    </form>
+
+                    <!-- Mempool Queue Header -->
+                    <div style="margin-top:24px;border-top:1px solid var(--border-subtle);padding-top:14px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span
+                                style="font-size:12px;font-weight:700;color:#ffffff;display:flex;align-items:center;gap:6px;">
+                                <span>📥 Pending Mempool</span>
+                            </span>
+                            <span style="font-size:10px;color:var(--text-dim);font-family:var(--font-mono);">Awaiting
+                                Validators</span>
+                        </div>
+                        <div class="mempool-list" id="mempoolList">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Column 2: P2P Network Topology & Consensus Pipeline -->
+            <section class="glass-panel network-column">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span class="panel-title-icon">🌐</span>
+                        <span>Peer-to-Peer Consensus Mesh (1 User & 6 Validators)</span>
+                    </div>
+                    <div class="chip chip-violet" style="font-size:10px;">
+                        Interactive Topology
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <!-- Interactive Canvas Visualizer -->
+                    <div class="visualizer-wrapper">
+                        <canvas id="networkCanvas"></canvas>
+                        <div class="visualizer-legend">
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#00f0ff;"></span>
+                                <span>User (Alice)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#8b5cf6;"></span>
+                                <span>6 Validators</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#10b981;"></span>
+                                <span>Approved (Vote)</span>
+                            </div>
+                            <div class="legend-item">
+                                <span class="legend-color" style="background:#fbbf24;"></span>
+                                <span>Block Commit</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4-Stage Consensus Pipeline Progress Bar -->
+                    <div class="consensus-timeline">
+                        <div class="step-card" id="step-1">
+                            <div class="step-number"><span>PHASE 01</span><span>&rarr;</span></div>
+                            <div class="step-name">Broadcast to Mempool</div>
+                            <div class="step-desc">User signs & sends tx to validator network</div>
+                        </div>
+                        <div class="step-card" id="step-2">
+                            <div class="step-number"><span>PHASE 02</span><span>&rarr;</span></div>
+                            <div class="step-name">6 Validator Approvals</div>
+                            <div class="step-desc"><code>validateTransaction()</code> returns approved</div>
+                        </div>
+                        <div class="step-card" id="step-3">
+                            <div class="step-number"><span>PHASE 03</span><span>&rarr;</span></div>
+                            <div class="step-name">Mint Block & SHA-256</div>
+                            <div class="step-desc">Proposer chains block via previous hash</div>
+                        </div>
+                        <div class="step-card" id="step-4">
+                            <div class="step-number"><span>PHASE 04</span><span>✓</span></div>
+                            <div class="step-name">Commit Shared Ledger</div>
+                            <div class="step-desc">Synchronized to all 6 node copies</div>
+                        </div>
+                    </div>
+
+                    <!-- 6 Validators Status Matrix -->
+                    <div style="margin-top:14px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                            <span
+                                style="font-size:12px;font-weight:700;color:#ffffff;display:flex;align-items:center;gap:6px;">
+                                <span>🛡️ Active Consensus Validators (6 Nodes)</span>
+                            </span>
+                            <span style="font-size:11px;color:#34d399;font-weight:600;">Consensus Requirement: 6 / 6
+                                Approvals</span>
+                        </div>
+                        <div class="validators-grid" id="validatorsGrid">
+                            <!-- Populated with 6 validator cards dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Column 3: Replicated Shared Ledger -->
+            <section class="glass-panel shared-ledger-column">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span class="panel-title-icon">⛓️</span>
+                        <span>Shared Ledger Explorer</span>
+                    </div>
+                    <span class="chip chip-emerald" style="font-size:10px;">Decentralized</span>
+                </div>
+
+                <div class="panel-body">
+                    <!-- Synchronization Badge -->
+                    <div class="ledger-sync-header">
+                        <span class="sync-status-text" id="syncStatus">
+                            <span class="pulse-dot"></span>
+                            All 6 Validators in Sync (Height: 1)
+                        </span>
+                        <span style="font-size:10px;color:var(--text-muted);font-family:var(--font-mono);">
+                            SHA-256 Verified
+                        </span>
+                    </div>
+
+                    <!-- Multi-Validator Ledger Inspector Tabs -->
+                    <div class="ledger-tab-group" id="ledgerTabsContainer">
+                        <!-- Populated with Global and Node 1..6 tabs -->
+                    </div>
+
+                    <!-- Chained Blocks View -->
+                    <div class="ledger-blocks-container" id="ledgerBlocks">
+                        <!-- Populated dynamically with chained blocks -->
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Real-time Console Log & Event Audit Stream -->
+        <section class="glass-panel console-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <span class="panel-title-icon">💻</span>
+                    <span>Live Network Activity & Node Consensus Audit Stream</span>
+                </div>
+                <div style="display:flex;gap:8px;">
+                    <span class="chip" style="font-size:10px;">Auto-scroll</span>
+                </div>
+            </div>
+            <div class="panel-body" style="padding:14px;">
+                <div class="console-terminal" id="consoleTerminal">
+                    <!-- Dynamic real-time logs inserted here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal 1: Validation Logic & Code Inspector -->
+    <div class="modal-overlay" id="codeModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Blockchain Validation Implementation</h2>
+                <button class="modal-close-btn" id="closeCodeModal">&times;</button>
+            </div>
+            <div>
+                <p style="color:#cbd5e1;font-size:13px;margin-bottom:14px;">
+                    Per user specification: The transaction is deterministically hashed with SHA-256 before being sent
+                    to the 6 validators, producing HEX, 256-bit BINARY, and DECIMAL (BigInt) representations. The
+                    validation function returns approved with hash details, followed by block creation and shared ledger
+                    synchronization.
+                </p>
+
+                <h3 style="font-size:13px;color:#38bdf8;margin-bottom:8px;font-family:var(--font-mono);">1.
+                    Deterministic Transaction Hashing (HEX, 256-bit Binary, Decimal BigInt)</h3>
+                <div class="code-snippet-box">
+                    <span class="highlight-keyword">async function</span> <span
+                        class="highlight-function">hashTransaction</span>(transaction) {
+                    <span class="highlight-keyword">const</span> txData = {
+                    txId: transaction.txId, sender: transaction.sender, recipient: transaction.recipient,
+                    amount: transaction.amount, fee: transaction.fee, timestamp: transaction.timestamp,
+                    metadata: transaction.metadata || {}, signature: transaction.signature, status: transaction.status
+                    };
+                    <span class="highlight-keyword">const</span> serialized = JSON.stringify(txData,
+                    Object.keys(txData).sort());
+                    <span class="highlight-keyword">const</span> hashBuffer = <span
+                        class="highlight-keyword">await</span> window.crypto.subtle.digest(<span
+                        class="highlight-string">'SHA-256'</span>, <span class="highlight-keyword">new</span>
+                    TextEncoder().encode(serialized));
+                    <span class="highlight-keyword">const</span> hashArray = Array.from(<span
+                        class="highlight-keyword">new</span> Uint8Array(hashBuffer));
+
+                    <span class="highlight-keyword">const</span> hex = hashArray.map(b => b.toString(16).padStart(2,
+                    '0')).join('');
+                    <span class="highlight-keyword">const</span> binary = hashArray.map(b => b.toString(2).padStart(8,
+                    '0')).join(''); <span class="highlight-comment">// Exactly 256 bits</span>
+                    <span class="highlight-keyword">const</span> decimal = BigInt('0b' + binary).toString(); <span
+                        class="highlight-comment">// JavaScript BigInt</span>
+                    <span class="highlight-keyword">return</span> { hex, binary, decimal };
+                    }
+                </div>
+
+                <h3 style="font-size:13px;color:#00f0ff;margin:16px 0 8px 0;font-family:var(--font-mono);">2. Validator
+                    Validation Function</h3>
+                <div class="code-snippet-box">
+                    <span class="highlight-keyword">function</span> <span
+                        class="highlight-function">validateTransaction</span>(transaction, transactionHash) {
+                    <span class="highlight-comment">// Clean, direct validation returning approved with transaction hash
+                        metadata</span>
+                    <span class="highlight-keyword">return</span> {
+                    status: <span class="highlight-string">"approved"</span>,
+                    isValid: <span class="highlight-keyword">true</span>,
+                    validatorVote: <span class="highlight-string">"approved"</span>,
+                    transactionHash: transactionHash.hex,
+                    transactionHashBinary: transactionHash.binary,
+                    transactionHashDecimal: transactionHash.decimal,
+                    approvedAt: Date.now()
+                    };
+                    }
+                </div>
+
+                <h3 style="font-size:13px;color:#a855f7;margin:16px 0 8px 0;font-family:var(--font-mono);">3.
+                    6-Validator Consensus & Shared Ledger Commit</h3>
+                <div class="code-snippet-box">
+                    <span class="highlight-comment">// 1. Generate transaction hash ONCE before validation</span>
+                    <span class="highlight-keyword">const</span> transactionHash = <span
+                        class="highlight-keyword">await</span> hashTransaction(currentTx);
+
+                    <span class="highlight-comment">// 2. Pass the exact SAME hash to all 6 distributed
+                        validators</span>
+                    <span class="highlight-keyword">for</span> (<span class="highlight-keyword">let</span> validator
+                    <span class="highlight-keyword">of</span> network.validators) {
+                    <span class="highlight-keyword">const</span> vote =
+                    validator.validateCandidateTransaction(currentTx, transactionHash);
+                    <span class="highlight-comment">// vote.vote === 'approved'</span>
+                    }
+
+                    <span class="highlight-comment">// 3. Store transaction hash inside Block & compute Block
+                        SHA-256</span>
+                    <span class="highlight-keyword">const</span> newBlock = <span class="highlight-keyword">new</span>
+                    Block(newIndex, timestamp, [currentTx], previousBlock.hash, transactionHash);
+                    newBlock.hash = <span class="highlight-keyword">await</span> newBlock.calculateHash();
+
+                    <span class="highlight-comment">// 4. Synchronize across all 6 validator copies of the Shared
+                        Ledger</span>
+                    network.validators.forEach(v => v.commitBlock(newBlock));
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Block Inspector -->
+    <div class="modal-overlay" id="blockModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Block Details <span id="blockDetailIndex" style="color:#00f0ff;"></span></h2>
+                <button class="modal-close-btn" id="closeBlockModal">&times;</button>
+            </div>
+            <div>
+                <div style="display:grid;grid-template-columns:140px 1fr;gap:10px;font-size:12px;margin-bottom:18px;">
+                    <div style="color:var(--text-muted);">Block Hash:</div>
+                    <div style="font-family:var(--font-mono);color:#38bdf8;word-break:break-all;" id="blockDetailHash">
+                    </div>
+
+                    <div style="color:var(--text-muted);">Previous Hash:</div>
+                    <div style="font-family:var(--font-mono);color:#94a3b8;word-break:break-all;"
+                        id="blockDetailPrevHash"></div>
+
+                    <div style="color:var(--text-muted);">Tx Hash (HEX):</div>
+                    <div style="font-family:var(--font-mono);color:#10b981;word-break:break-all;"
+                        id="blockDetailTxHashHex"></div>
+
+                    <div style="color:var(--text-muted);">Tx Hash (Binary 256b):</div>
+                    <div style="font-family:var(--font-mono);color:#fbbf24;word-break:break-all;font-size:10px;"
+                        id="blockDetailTxHashBinary"></div>
+
+                    <div style="color:var(--text-muted);">Tx Hash (Decimal):</div>
+                    <div style="font-family:var(--font-mono);color:#c084fc;word-break:break-all;font-size:10px;"
+                        id="blockDetailTxHashDecimal"></div>
+
+                    <div style="color:var(--text-muted);">Tx Hash (Angle rad):</div>
+                    <div style="font-family:var(--font-mono);color:#f472b6;word-break:break-all;font-size:10px;"
+                        id="blockDetailTxHashAngle"></div>
+
+                    <div style="color:var(--text-muted);">Timestamp:</div>
+                    <div style="color:#ffffff;" id="blockDetailTimestamp"></div>
+
+                    <div style="color:var(--text-muted);">Block Proposer:</div>
+                    <div style="color:#a855f7;font-weight:600;" id="blockDetailProposer"></div>
+
+                    <div style="color:var(--text-muted);">Nonce / Seed:</div>
+                    <div style="font-family:var(--font-mono);color:#fbbf24;" id="blockDetailNonce"></div>
+                </div>
+
+                <h3 style="font-size:13px;font-weight:700;color:#ffffff;margin-bottom:8px;">Block Transactions</h3>
+                <div id="blockDetailTxs" style="margin-bottom:18px;"></div>
+
+                <h3 style="font-size:13px;font-weight:700;color:#ffffff;margin-bottom:8px;">6-Validator Signatures &
+                    Consensus Votes</h3>
+                <div id="blockDetailSigs"
+                    style="background:rgba(0,0,0,0.3);border-radius:6px;padding:12px;border:1px solid rgba(255,255,255,0.06);">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="blockchain.js"></script>
+    <script src="network-visualizer.js"></script>
+    <script src="quantum-backend.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
